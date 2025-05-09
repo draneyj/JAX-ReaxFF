@@ -112,9 +112,8 @@ def  main():
   params_list_orig = read_parameter_file(args.params, ignore_sensitivity=0)
   params_list = map_params(params_list_orig, force_field.params_to_indices)
   for i in range(len(force_field.self_energies)):
-    params_list.append((("self_energies", (i,)), 0.1, -500.0, 500.0))
-  
-  params_list.append((("shift", (0,)), 0.1, -500.0, 500.0))  
+    params_list.append((("self_energies", (i,)), 0.1, -15000.0, 500.0))
+  params_list.append((("shift", (0,)), 0.1, -15000.0, 500.0))  
   
   # preprocess params
   param_indices=[]
@@ -236,7 +235,6 @@ def  main():
                                            force_field_new,
                                            max_sizes,
                                            multip=multip)
-        
         print("name: old size -> new size")
         for k in new_max_sizes.keys():
           if max_sizes[k] != new_max_sizes[k]:
@@ -258,14 +256,13 @@ def  main():
                          args.use_forces, args.use_charges)
       print(f"Test MAE: {round(MAE,2)}, MSE: {round(MSE,2)}", flush=True)
       if MAE < lowest_err:
+        print("New best model found!")
         best_FF = copy.deepcopy(force_field_new)
         lowest_err = MAE
       
-      name = f"{args.out_folder}/ffield_{ind+1}"
-      print(best_FF.self_energies)
-      print(best_FF.shift)
-      best_FF = move_dataclass(best_FF, onp)
-      parse_and_save_force_field(args.init_FF, name, best_FF)
+        name = f"{args.out_folder}/ffield_{ind+1}"
+        best_FF = move_dataclass(best_FF, onp)
+        parse_and_save_force_field(args.init_FF, name, best_FF)
    
 if __name__ == "__main__":
   main()

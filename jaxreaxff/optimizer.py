@@ -398,6 +398,8 @@ def update_inter_sizes(positions, structures, force_field,
   for k in DYNAMIC_INTERACTION_KEYS:
     for s in sizes:
         # assign some buffer room
+        if s[k] == 0:
+            s[k] = 1
         s[k] = math.ceil(s[k] * multip)
   # pick the maximum size for each interaction
   max_sizes = copy.deepcopy(dict(cur_sizes))

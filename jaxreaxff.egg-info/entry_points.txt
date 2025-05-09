@@ -1,0 +1,3 @@
+[console_scripts]
+jaxreaxff = jaxreaxff.driver:main
+jaxreaxffv2 = jaxreaxff.driver_v2:main

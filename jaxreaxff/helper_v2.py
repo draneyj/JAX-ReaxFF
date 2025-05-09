@@ -7,7 +7,7 @@ from jaxreaxff.structure import (Structure, BondRestraint,
                                  AngleRestraint, TorsionRestraint)
 from jaxreaxff.optimizer import calculate_energy_and_charges
 import jax
-
+from jaxreaxff.helper import calculate_box_shifts
 
 def read_data(data_path, force_field):
   with open(data_path, 'rb') as fptr:
@@ -27,6 +27,12 @@ def read_data(data_path, force_field):
         my_self_e = sum([self_energies[t] for t in row['species']])
       except:
         continue
+      if 'orth_matrix' in row:
+        orth_matrix = row['orth_matrix']
+        shift_arr = calculate_box_shifts(True, 10.0, orth_matrix)
+      else:
+        orth_matrix = onp.eye(3,dtype=onp.float32) * 999
+        shift_arr = onp.array([0,0,0],dtype=onp.int32).reshape(-1,3)
       if 'atomic_charges' in row:
         target_ch = row['atomic_charges']
       else:
@@ -153,7 +159,7 @@ def calculate_full_error(force_field, data, max_sizes,
         for i in range(len(Y)):
           target_f = X.target_f[i, :X.atom_count[i]]
           force_targets.append(onp.array(target_f).reshape(-1,3))
-          pred_f = forces[i, :X.atom_count[i]]
+          pred_f = -forces[i, :X.atom_count[i]]
           force_preds.append(onp.array(pred_f).reshape(-1,3))
     else:
         (energy, charges) = energy_f(X.positions, X, nbr_lists, force_field)
@@ -206,7 +212,7 @@ def loss_function(force_field, structure, nbr_lists,
       atom_mask = structure.atom_types >= 0
       (energy_vals, charges), forces = jax.vmap(jax.value_and_grad(calculate_energy_and_charges, has_aux=True),
                                      (0,0,0,None))(structure.positions, structure, nbr_lists, force_field)
-      force_err = (forces - structure.target_f) ** 2
+      force_err = (forces + structure.target_f) ** 2
       force_err = force_err * atom_mask[:,:, jnp.newaxis]
       force_loss = jnp.sum(force_err/(structure.atom_count.reshape(-1,1,1) * 3)) * force_w
   else:

@@ -60,6 +60,7 @@ def calculate_dist_and_angles(positons, structure, nbr_lists):
   shifts = structure.periodic_image_shifts
   orth_matrix = structure.orth_matrix
   shift_pos = jnp.dot(orth_matrix,shifts.transpose()).transpose()
+
   N = len(R)
 
   atom_inds = jnp.arange(N).reshape(-1,1)
