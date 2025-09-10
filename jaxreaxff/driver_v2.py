@@ -243,6 +243,7 @@ def  main():
           
       grad_ff = grad_f(force_field_new, X, nbr_lists)
       grads = get_params_jit(grad_ff, param_indices)
+      grads = jnp.nan_to_num(grads, nan=0.0, posinf=0.0, neginf=0.0)  # Handle NaNs and Infs
       
       updates, opt_state = jax.jit(optimizer.update)(grads,
                                                  opt_state,
