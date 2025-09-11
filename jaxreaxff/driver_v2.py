@@ -204,11 +204,11 @@ def  main():
   
   opt_state = optimizer.init(selected_params)
   
-  MSE, MAE, en_preds, en_targets = calculate_full_error(force_field, test_data, max_sizes, 
+  MSE, MAE, en_preds, en_targets = calculate_full_error(force_field, test_data, max_sizes,
                            allocate_f, energy_force_f, energy_f,
                            args.use_forces, args.use_charges)
   all_MAE_te = []
-  all_MSE_te = []  
+  all_MSE_te = []
   print(f"Test MAE: {round(MAE,2)}, MSE: {round(MSE,2)}", flush=True)
   all_MAE_te.append(MAE)
   all_MSE_te.append(MSE)
@@ -255,6 +255,10 @@ def  main():
       MSE, MAE, en_preds, en_targets = calculate_full_error(force_field_new, test_data, max_sizes, 
                          allocate_f, energy_force_f, energy_f,
                          args.use_forces, args.use_charges)
+      if jnp.isnan(MAE) or jnp.isnan(MSE):
+        print("NaN error encountered, stopping optimization!")
+        exit(1)
+        
       print(f"Test MAE: {round(MAE,2)}, MSE: {round(MSE,2)}", flush=True)
       if MAE < lowest_err:
         print("New best model found!")
